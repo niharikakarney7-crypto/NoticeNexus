@@ -1,17 +1,16 @@
 /**
  * NoticeNexus — Student Dashboard Interactive Client
  * Connects directly to Express REST API and MySQL database.
- * Handles dynamic search, category filtering, saving notices, reminders, and Text-to-Speech.
+ * Handles dynamic search, category filtering, saving notices to MySQL,
+ * student study reminders in MySQL, and Text-to-Speech.
  */
 
-// App State (Loaded dynamically from MySQL via API)
+// App State
 let currentNotices = [];
 let activeCategory = "ALL";
 let savedNoticeIds = new Set();
-let reminders = [
-  { id: 1, text: "Check CSE project synopsis guidelines", completed: false },
-  { id: 2, text: "Verify scholarship income certificate validity", completed: true }
-];
+let reminders = [];
+let currentUser = null;
 
 // DOM Elements
 const noticeFeedContainer = document.getElementById("notice-feed-container");
@@ -32,6 +31,7 @@ const savedCountEl = document.getElementById("saved-count");
 const navSavedBtn = document.getElementById("nav-saved-btn");
 const ttsGlobalBar = document.getElementById("tts-global-bar");
 const ttsStopBtn = document.getElementById("tts-stop-btn");
+const welcomeHeading = document.getElementById("welcome-heading");
 
 // Debounce timer for search
 let searchDebounceTimer = null;
@@ -43,22 +43,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
   currentDateDisplay.textContent = today.toLocaleDateString('en-US', options);
 
-  // Load saved notice IDs from localStorage preference
-  try {
-    const cachedSaved = JSON.parse(localStorage.getItem("noticenexus_saved_ids") || "[]");
-    savedNoticeIds = new Set(cachedSaved);
-  } catch (e) {
-    savedNoticeIds = new Set();
-  }
-  updateSavedCountUI();
+  // Check Student Session & User Profile
+  await checkUserSession();
 
-  // Load Departments dynamically from MySQL
+  // Load Saved Notices & Personal Reminders from MySQL
+  await loadSavedNoticesFromAPI();
+  await loadRemindersFromAPI();
+
+  // Load Departments & Notices from MySQL
   await loadDepartmentsFromAPI();
-
-  // Load Notices & Deadlines from MySQL
   await fetchNoticesFromAPI();
   await fetchDeadlinesFromAPI();
-  renderReminders();
 
   // Setup Event Listeners
   searchInput.addEventListener("input", () => {
@@ -84,27 +79,48 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
-  // Saved notices toggle filter
+  // Saved notices toggle filter (fetches from MySQL)
   let showingSavedOnly = false;
-  navSavedBtn.addEventListener("click", (e) => {
+  navSavedBtn.addEventListener("click", async (e) => {
     e.preventDefault();
     showingSavedOnly = !showingSavedOnly;
+
     if (showingSavedOnly) {
       navSavedBtn.classList.add("active");
-      const savedList = currentNotices.filter(n => savedNoticeIds.has(n.id));
-      renderNotices(savedList);
+      if (currentUser) {
+        try {
+          const res = await API.get('/reminders/saved');
+          renderNotices(res.data.notices || []);
+        } catch {
+          const savedList = currentNotices.filter(n => savedNoticeIds.has(n.id));
+          renderNotices(savedList);
+        }
+      } else {
+        const savedList = currentNotices.filter(n => savedNoticeIds.has(n.id));
+        renderNotices(savedList);
+      }
     } else {
       navSavedBtn.classList.remove("active");
       renderNotices(currentNotices);
     }
   });
 
-  // Reminders Form
-  addReminderForm.addEventListener("submit", (e) => {
+  // Reminders Form Submission (persists in MySQL)
+  addReminderForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const text = reminderInput.value.trim();
-    if (text) {
-      reminders.push({ id: Date.now(), text, completed: false });
+    if (!text) return;
+
+    if (currentUser) {
+      try {
+        await API.post('/reminders', { title: text });
+        reminderInput.value = "";
+        await loadRemindersFromAPI();
+      } catch (err) {
+        alert("Error saving reminder: " + err.message);
+      }
+    } else {
+      reminders.push({ id: Date.now(), title: text, is_completed: false });
       reminderInput.value = "";
       renderReminders();
     }
@@ -116,6 +132,88 @@ document.addEventListener("DOMContentLoaded", async () => {
     ttsGlobalBar.style.display = "none";
   });
 });
+
+/**
+ * Check if student is logged in
+ */
+async function checkUserSession() {
+  const token = API.getToken();
+  if (!token) return;
+
+  try {
+    const res = await API.get('/auth/me');
+    currentUser = res.data.user;
+
+    if (welcomeHeading) {
+      welcomeHeading.innerHTML = `Welcome, <strong>${escapeHtml(currentUser.fullName)}</strong>`;
+    }
+
+    // Add logout link in top navbar actions if student
+    const navActions = document.querySelector(".nav-actions");
+    if (navActions && !document.getElementById("student-logout-btn")) {
+      const logoutBtn = document.createElement("button");
+      logoutBtn.id = "student-logout-btn";
+      logoutBtn.className = "btn btn-outline btn-sm";
+      logoutBtn.textContent = "Log Out";
+      logoutBtn.onclick = () => {
+        API.clearToken();
+        window.location.reload();
+      };
+      navActions.appendChild(logoutBtn);
+    }
+  } catch {
+    currentUser = null;
+    API.clearToken();
+  }
+}
+
+/**
+ * Load saved bookmarks from MySQL (or fallback for guest)
+ */
+async function loadSavedNoticesFromAPI() {
+  if (currentUser) {
+    try {
+      const res = await API.get('/reminders/saved/ids');
+      savedNoticeIds = new Set(res.data.savedNoticeIds || []);
+      updateSavedCountUI();
+      return;
+    } catch (e) {
+      console.warn("Could not sync saved notices from API:", e);
+    }
+  }
+
+  // Guest fallback
+  try {
+    const cachedSaved = JSON.parse(localStorage.getItem("noticenexus_saved_ids") || "[]");
+    savedNoticeIds = new Set(cachedSaved);
+  } catch {
+    savedNoticeIds = new Set();
+  }
+  updateSavedCountUI();
+}
+
+/**
+ * Load student reminders from MySQL
+ */
+async function loadRemindersFromAPI() {
+  if (currentUser) {
+    try {
+      const res = await API.get('/reminders');
+      reminders = res.data.reminders || [];
+      renderReminders();
+      return;
+    } catch (e) {
+      console.warn("Could not load reminders from API:", e);
+    }
+  }
+
+  // Fallback initial sample reminders for unauthenticated guest
+  reminders = [
+    { id: 1, title: "Check CSE project synopsis guidelines", is_completed: false },
+    { id: 2, title: "Verify scholarship income certificate validity", is_completed: true }
+  ];
+  renderReminders();
+}
 
 /**
  * Fetch Departments from MySQL via Express API
@@ -138,7 +236,6 @@ async function loadDepartmentsFromAPI() {
  * Fetch Notices from MySQL via Express API
  */
 async function fetchNoticesFromAPI() {
-  // Show loading indicator
   noticeFeedContainer.innerHTML = `
     <div class="card" style="text-align: center; padding: var(--space-2xl) 0;">
       <p style="color: var(--text-muted);">Fetching official notices from campus database...</p>
@@ -350,21 +447,24 @@ function renderReminders() {
   }
 
   remindersListContainer.innerHTML = reminders.map(r => `
-    <div class="reminder-item">
+    <div class="reminder-item ${r.is_overdue ? 'overdue' : ''}">
       <input 
         type="checkbox" 
         class="reminder-checkbox" 
-        ${r.completed ? 'checked' : ''} 
-        onchange="toggleReminder(${r.id})"
+        ${r.is_completed ? 'checked' : ''} 
+        onchange="toggleReminderState(${r.id}, this.checked)"
         aria-label="Mark reminder as completed"
       >
-      <span class="reminder-text ${r.completed ? 'completed' : ''}">
-        ${escapeHtml(r.text)}
-      </span>
+      <div style="flex: 1; margin-left: var(--space-sm);">
+        <div class="reminder-text ${r.is_completed ? 'completed' : ''}">
+          ${escapeHtml(r.title)}
+        </div>
+        ${r.due_date ? `<div style="font-size:0.75rem; color:${r.is_overdue ? 'var(--status-deadline)' : 'var(--text-muted)'};">${r.is_overdue ? '⚠️ Overdue: ' : 'Due: '}${formatDate(r.due_date)}</div>` : ''}
+      </div>
       <button 
         type="button" 
         class="reminder-delete-btn" 
-        onclick="deleteReminder(${r.id})"
+        onclick="removeReminder(${r.id})"
         aria-label="Delete reminder"
       >
         ✕
@@ -373,31 +473,68 @@ function renderReminders() {
   `).join("");
 }
 
-function toggleReminder(id) {
-  const item = reminders.find(r => r.id === id);
-  if (item) {
-    item.completed = !item.completed;
+async function toggleReminderState(id, isCompleted) {
+  if (currentUser) {
+    try {
+      await API.patch(`/reminders/${id}`, { is_completed: isCompleted });
+      await loadRemindersFromAPI();
+    } catch (err) {
+      alert("Error updating reminder: " + err.message);
+    }
+  } else {
+    const item = reminders.find(r => r.id === id);
+    if (item) {
+      item.is_completed = isCompleted;
+      renderReminders();
+    }
+  }
+}
+
+async function removeReminder(id) {
+  if (currentUser) {
+    try {
+      await API.delete(`/reminders/${id}`);
+      await loadRemindersFromAPI();
+    } catch (err) {
+      alert("Error deleting reminder: " + err.message);
+    }
+  } else {
+    reminders = reminders.filter(r => r.id !== id);
     renderReminders();
   }
 }
 
-function deleteReminder(id) {
-  reminders = reminders.filter(r => r.id !== id);
-  renderReminders();
-}
-
 /**
- * Save / Bookmark Notice Handler
+ * Save / Bookmark Notice Handler (Persists in MySQL when logged in)
  */
-function toggleSaveNotice(id) {
-  if (savedNoticeIds.has(id)) {
-    savedNoticeIds.delete(id);
+async function toggleSaveNotice(id) {
+  const willSave = !savedNoticeIds.has(id);
+
+  if (currentUser) {
+    try {
+      if (willSave) {
+        await API.post(`/reminders/saved/${id}`);
+        savedNoticeIds.add(id);
+      } else {
+        await API.delete(`/reminders/saved/${id}`);
+        savedNoticeIds.delete(id);
+      }
+      updateSavedCountUI();
+      renderNotices(currentNotices);
+    } catch (err) {
+      alert("Error updating bookmark: " + err.message);
+    }
   } else {
-    savedNoticeIds.add(id);
+    // Guest local persistence
+    if (willSave) {
+      savedNoticeIds.add(id);
+    } else {
+      savedNoticeIds.delete(id);
+    }
+    localStorage.setItem("noticenexus_saved_ids", JSON.stringify([...savedNoticeIds]));
+    updateSavedCountUI();
+    renderNotices(currentNotices);
   }
-  localStorage.setItem("noticenexus_saved_ids", JSON.stringify([...savedNoticeIds]));
-  updateSavedCountUI();
-  renderNotices(currentNotices);
 }
 
 function updateSavedCountUI() {
@@ -450,8 +587,8 @@ function getCategoryBadgeClass(category) {
 
 function formatDate(dateString) {
   if (!dateString) return "N/A";
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const d = new Date(dateString);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function escapeHtml(str) {

@@ -9,6 +9,7 @@ const cors = require('cors');
 const { testConnection } = require('./config/db');
 const noticeRoutes = require('./routes/notice.routes');
 const authRoutes = require('./routes/auth.routes');
+const reminderRoutes = require('./routes/reminder.routes');
 
 const app = express();
 
@@ -63,6 +64,7 @@ app.get('/api/health', async (req, res) => {
 // REST API Feature Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/notices', noticeRoutes);
+app.use('/api/reminders', reminderRoutes);
 
 // Centralized 404 Handler for Unrecognized API Routes
 app.use('/api', (req, res) => {
