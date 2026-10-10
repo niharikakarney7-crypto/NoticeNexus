@@ -176,9 +176,194 @@ async function getAllDepartments() {
   return rows;
 }
 
+/**
+ * Retrieve all notices for Staff/Admin management console (including drafts and archived)
+ */
+async function getAllNoticesForManagement({ status, departmentId } = {}) {
+  let query = `
+    SELECT 
+      n.id, n.title, n.category, n.academic_year, n.status, n.deadline,
+      n.published_at, n.created_at, n.updated_at, n.source_url, n.source_title,
+      d.id AS department_id, d.name AS department_name, d.code AS department_code,
+      u.full_name AS author_name
+    FROM notices n
+    JOIN departments d ON n.department_id = d.id
+    JOIN users u ON n.author_id = u.id
+    WHERE 1=1
+  `;
+  const params = [];
+
+  if (status && status !== 'ALL') {
+    query += ` AND n.status = ?`;
+    params.push(status);
+  }
+
+  if (departmentId) {
+    query += ` AND n.department_id = ?`;
+    params.push(departmentId);
+  }
+
+  query += ` ORDER BY n.created_at DESC`;
+
+  const [rows] = await pool.query(query, params);
+  return rows;
+}
+
+/**
+ * Create a new official notice (Staff/Admin)
+ */
+async function createNotice(data, authorId) {
+  const {
+    title,
+    category,
+    department_id,
+    academic_year = 'All Years',
+    content,
+    source_url,
+    source_title,
+    deadline = null,
+    audience = 'All Students',
+    required_documents = 'Not specified in this notice',
+    action_items = 'Review official source',
+    telugu_title = null,
+    telugu_summary = null,
+    status = 'draft'
+  } = data;
+
+  const publishedAt = status === 'published' ? new Date() : null;
+
+  const query = `
+    INSERT INTO notices (
+      title, category, department_id, academic_year, content,
+      source_url, source_title, deadline, audience, required_documents,
+      action_items, telugu_title, telugu_summary, status, author_id, published_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  const [result] = await pool.query(query, [
+    title,
+    category,
+    department_id,
+    academic_year,
+    content,
+    source_url,
+    source_title,
+    deadline || null,
+    audience,
+    required_documents,
+    action_items,
+    telugu_title,
+    telugu_summary,
+    status,
+    authorId,
+    publishedAt
+  ]);
+
+  return result.insertId;
+}
+
+/**
+ * Update an existing notice and record revision history
+ */
+async function updateNotice(id, data, editorId, changeSummary = 'Content updated by staff') {
+  const {
+    title,
+    category,
+    department_id,
+    academic_year,
+    content,
+    source_url,
+    source_title,
+    deadline,
+    audience,
+    required_documents,
+    action_items,
+    telugu_title,
+    telugu_summary,
+    status
+  } = data;
+
+  const query = `
+    UPDATE notices SET
+      title = COALESCE(?, title),
+      category = COALESCE(?, category),
+      department_id = COALESCE(?, department_id),
+      academic_year = COALESCE(?, academic_year),
+      content = COALESCE(?, content),
+      source_url = COALESCE(?, source_url),
+      source_title = COALESCE(?, source_title),
+      deadline = ?,
+      audience = COALESCE(?, audience),
+      required_documents = COALESCE(?, required_documents),
+      action_items = COALESCE(?, action_items),
+      telugu_title = COALESCE(?, telugu_title),
+      telugu_summary = COALESCE(?, telugu_summary),
+      status = COALESCE(?, status),
+      updated_at = NOW()
+    WHERE id = ?
+  `;
+
+  await pool.query(query, [
+    title,
+    category,
+    department_id,
+    academic_year,
+    content,
+    source_url,
+    source_title,
+    deadline || null,
+    audience,
+    required_documents,
+    action_items,
+    telugu_title,
+    telugu_summary,
+    status,
+    id
+  ]);
+
+  // Record revision audit log
+  await pool.query(`
+    INSERT INTO notice_revisions (notice_id, editor_id, revised_title, revised_content, change_summary)
+    VALUES (?, ?, ?, ?, ?)
+  `, [id, editorId, title || 'Notice Revised', content || 'Details updated', changeSummary]);
+
+  return true;
+}
+
+/**
+ * Update notice publication status (draft -> published -> archived)
+ */
+async function updateNoticeStatus(id, newStatus, editorId) {
+  const publishedClause = newStatus === 'published' ? ', published_at = NOW()' : '';
+  const query = `UPDATE notices SET status = ? ${publishedClause}, updated_at = NOW() WHERE id = ?`;
+  await pool.query(query, [newStatus, id]);
+
+  // Record revision
+  await pool.query(`
+    INSERT INTO notice_revisions (notice_id, editor_id, revised_title, revised_content, change_summary)
+    VALUES (?, ?, 'Status Change', CONCAT('Status set to ', ?), CONCAT('Notice status updated to ', ?))
+  `, [id, editorId, newStatus, newStatus]);
+
+  return true;
+}
+
+/**
+ * Delete a notice by ID (Admin only)
+ */
+async function deleteNotice(id) {
+  const [result] = await pool.query('DELETE FROM notices WHERE id = ?', [id]);
+  return result.affectedRows > 0;
+}
+
 module.exports = {
   getPublishedNotices,
   getNoticeById,
   getUpcomingDeadlines,
-  getAllDepartments
+  getAllDepartments,
+  getAllNoticesForManagement,
+  createNotice,
+  updateNotice,
+  updateNoticeStatus,
+  deleteNotice
 };
+

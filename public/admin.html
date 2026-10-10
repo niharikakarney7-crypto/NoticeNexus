@@ -7,10 +7,10 @@
   <title>Staff Notice Management — NoticeNexus</title>
 
   <!-- Design System Stylesheets -->
-  <link rel="stylesheet" href="css/variables.css">
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/components.css">
-  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
 
   <style>
     .admin-header-row {
@@ -96,13 +96,14 @@
   <!-- Top Navigation Bar -->
   <header class="navbar" role="banner">
     <div class="container nav-wrapper">
-      <a href="index.html" class="brand" aria-label="NoticeNexus Home">
+      <a href="/" class="brand" aria-label="NoticeNexus Home">
         <div class="brand-icon">NN</div>
         <div class="brand-text">Notice<span>Nexus</span> <small style="font-size:0.75rem; color:var(--color-plum);">STAFF CONSOLE</small></div>
       </a>
       <div class="nav-actions">
-        <a href="student.html" target="_blank" class="btn btn-outline btn-sm">Preview Student Board ↗</a>
-        <a href="login.html" class="btn btn-outline-plum btn-sm">Log Out</a>
+        <div id="admin-user-bar" style="font-size:0.88rem; color:var(--color-navy); margin-right:var(--space-sm);"></div>
+        <a href="/student" target="_blank" class="btn btn-outline btn-sm">Preview Student Board ↗</a>
+        <button type="button" id="admin-logout-btn" class="btn btn-outline-plum btn-sm">Log Out</button>
       </div>
     </div>
   </header>
@@ -300,8 +301,8 @@
         <!-- Action Buttons -->
         <div style="display: flex; justify-content: flex-end; gap: var(--space-sm);">
           <button type="button" id="cancel-modal-btn" class="btn btn-outline">Cancel</button>
-          <button type="submit" name="status" value="draft" class="btn btn-secondary">Save as Draft</button>
-          <button type="submit" name="status" value="published" class="btn btn-primary">Publish Officially</button>
+          <button type="submit" id="submit-draft-btn" class="btn btn-secondary">Save as Draft</button>
+          <button type="submit" id="submit-publish-btn" class="btn btn-primary">Publish Officially</button>
         </div>
       </form>
     </div>
@@ -317,79 +318,8 @@
     </div>
   </footer>
 
-  <script>
-    // Sample admin notice state for Phase 2 UI testing
-    const adminNotices = [
-      { id: 1, title: "Odd Semester End-Examinations Schedule", dept: "Examination Cell", cat: "Examinations", year: "All Years", status: "published", deadline: "2026-10-25", pubDate: "2026-10-08" },
-      { id: 2, title: "Post-Matric National Scholarship Application Window", dept: "Scholarship Division", cat: "Scholarships", year: "All Years", status: "published", deadline: "2026-11-15", pubDate: "2026-10-05" },
-      { id: 3, title: "Major Project Synopsis Submission Deadline", dept: "Computer Science & Engg", cat: "Academics", year: "4th Year", status: "published", deadline: "2026-10-18", pubDate: "2026-10-09" },
-      { id: 4, title: "TechCorp Campus Placement Selection Process", dept: "Training & Placement", cat: "Placements", year: "4th Year", status: "published", deadline: "2026-10-15", pubDate: "2026-10-07" },
-      { id: 5, title: "Draft: Revised Lab Evaluation Guidelines", dept: "Computer Science & Engg", cat: "Academics", year: "All Years", status: "draft", deadline: "", pubDate: "2026-10-10" }
-    ];
-
-    const tableBody = document.getElementById("admin-table-body");
-    const modal = document.getElementById("notice-modal");
-    const openModalBtn = document.getElementById("open-create-modal-btn");
-    const closeModalBtn = document.getElementById("close-modal-btn");
-    const cancelModalBtn = document.getElementById("cancel-modal-btn");
-    const noticeForm = document.getElementById("notice-form");
-
-    function renderTable() {
-      tableBody.innerHTML = adminNotices.map(n => `
-        <tr>
-          <td>
-            <strong><a href="notice.html?id=${n.id}" target="_blank" style="color:var(--color-navy);">${n.title}</a></strong>
-            <div style="font-size:0.8rem; color:var(--text-muted);">${n.dept}</div>
-          </td>
-          <td><span class="badge badge-exam">${n.cat}</span></td>
-          <td>${n.year}</td>
-          <td>
-            <span class="badge ${n.status === 'published' ? 'badge-verified' : 'badge-admin'}">
-              ${n.status.toUpperCase()}
-            </span>
-          </td>
-          <td style="color:${n.deadline ? 'var(--status-deadline)' : 'inherit'}; font-weight:600;">
-            ${n.deadline || 'None'}
-          </td>
-          <td>${n.pubDate}</td>
-          <td style="text-align: right;">
-            <button class="btn btn-outline btn-sm" onclick="alert('Editing Notice #' + ${n.id})">Edit</button>
-            <button class="btn btn-outline-plum btn-sm" onclick="alert('Notice #' + ${n.id} + ' archived')">Archive</button>
-          </td>
-        </tr>
-      `).join("");
-    }
-
-    openModalBtn.addEventListener("click", () => modal.style.display = "flex");
-    closeModalBtn.addEventListener("click", () => modal.style.display = "none");
-    cancelModalBtn.addEventListener("click", () => modal.style.display = "none");
-
-    noticeForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const title = document.getElementById("form-title").value;
-      const dept = document.getElementById("form-department").value;
-      const cat = document.getElementById("form-category").value;
-      const year = document.getElementById("form-year").value;
-      const deadline = document.getElementById("form-deadline").value;
-
-      adminNotices.unshift({
-        id: Date.now(),
-        title,
-        dept,
-        cat,
-        year,
-        status: "published",
-        deadline,
-        pubDate: new Date().toISOString().split("T")[0]
-      });
-
-      renderTable();
-      modal.style.display = "none";
-      noticeForm.reset();
-      alert("Official notice added to management table! (Connected to MySQL in Phase 5 & 6)");
-    });
-
-    renderTable();
-  </script>
+  <!-- Centralized API Client & Admin Management Logic -->
+  <script src="/js/api.js"></script>
+  <script src="/js/admin.js"></script>
 </body>
 </html>

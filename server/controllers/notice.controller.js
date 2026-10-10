@@ -111,9 +111,143 @@ async function getNotice(req, res, next) {
   }
 }
 
+/**
+ * GET /api/notices/manage
+ * Staff/Admin: Fetch all notices including drafts and archives
+ */
+async function getManagementNotices(req, res, next) {
+  try {
+    const { status, departmentId } = req.query;
+    const notices = await noticeService.getAllNoticesForManagement({ status, departmentId });
+    res.status(200).json({
+      status: 'success',
+      results: notices.length,
+      data: { notices }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * POST /api/notices
+ * Staff/Admin: Create and publish or draft a new official notice
+ */
+async function createNotice(req, res, next) {
+  try {
+    const { title, category, department_id, content, source_url } = req.body;
+
+    if (!title || !category || !department_id || !content || !source_url) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Required fields missing: title, category, department_id, content, and source_url must be provided.'
+      });
+    }
+
+    const noticeId = await noticeService.createNotice(req.body, req.user.id);
+    const createdNotice = await noticeService.getNoticeById(noticeId);
+
+    res.status(201).json({
+      status: 'success',
+      message: 'Official notice created successfully.',
+      data: { notice: createdNotice }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * PUT /api/notices/:id
+ * Staff/Admin: Edit notice details and maintain revision history
+ */
+async function updateNotice(req, res, next) {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const { change_summary } = req.body;
+
+    const existing = await noticeService.getNoticeById(id);
+    if (!existing) {
+      return res.status(404).json({
+        status: 'error',
+        message: `Notice with ID ${id} was not found.`
+      });
+    }
+
+    await noticeService.updateNotice(id, req.body, req.user.id, change_summary);
+    const updated = await noticeService.getNoticeById(id);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Notice updated and revision history recorded.',
+      data: { notice: updated }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * PATCH /api/notices/:id/status
+ * Staff/Admin: Update publication status (draft -> published -> archived)
+ */
+async function changeNoticeStatus(req, res, next) {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const { status } = req.body;
+
+    if (!['draft', 'published', 'archived'].includes(status)) {
+      return res.status(400).json({
+        status: 'error',
+        message: "Status must be 'draft', 'published', or 'archived'."
+      });
+    }
+
+    await noticeService.updateNoticeStatus(id, status, req.user.id);
+
+    res.status(200).json({
+      status: 'success',
+      message: `Notice status updated to '${status}'.`
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * DELETE /api/notices/:id
+ * Admin Only: Remove notice
+ */
+async function removeNotice(req, res, next) {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const deleted = await noticeService.deleteNotice(id);
+
+    if (!deleted) {
+      return res.status(404).json({
+        status: 'error',
+        message: `Notice with ID ${id} was not found.`
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Notice deleted successfully.'
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   getNotices,
   getDeadlines,
   getDepartments,
-  getNotice
+  getNotice,
+  getManagementNotices,
+  createNotice,
+  updateNotice,
+  changeNoticeStatus,
+  removeNotice
 };
+

@@ -1,28 +1,63 @@
 /**
  * NoticeNexus — Centralized API Client
- * Wraps fetch requests with error handling, JSON parsing, and unified base URL.
+ * Wraps fetch requests with error handling, JSON parsing, unified base URL,
+ * and automatic Bearer token injection for authenticated endpoints.
  */
 
 const API = {
   baseUrl: '/api',
 
-  /**
-   * Helper for GET requests with optional query parameters.
-   */
-  async get(endpoint, params = {}) {
+  getToken() {
+    return localStorage.getItem('noticenexus_token');
+  },
+
+  setToken(token) {
+    localStorage.setItem('noticenexus_token', token);
+  },
+
+  clearToken() {
+    localStorage.removeItem('noticenexus_token');
+    localStorage.removeItem('noticenexus_user');
+  },
+
+  getCurrentUser() {
+    try {
+      return JSON.parse(localStorage.getItem('noticenexus_user') || 'null');
+    } catch {
+      return null;
+    }
+  },
+
+  setCurrentUser(user) {
+    localStorage.setItem('noticenexus_user', JSON.stringify(user));
+  },
+
+  getHeaders(customHeaders = {}) {
+    const headers = {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      ...customHeaders
+    };
+    const token = this.getToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+  },
+
+  async request(endpoint, options = {}) {
     const url = new URL(this.baseUrl + endpoint, window.location.origin);
-    Object.keys(params).forEach(key => {
-      if (params[key] !== undefined && params[key] !== null && params[key] !== '') {
-        url.searchParams.append(key, params[key]);
-      }
-    });
+    if (options.params) {
+      Object.keys(options.params).forEach(key => {
+        if (options.params[key] !== undefined && options.params[key] !== null && options.params[key] !== '') {
+          url.searchParams.append(key, options.params[key]);
+        }
+      });
+    }
 
     const response = await fetch(url.toString(), {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
+      ...options,
+      headers: this.getHeaders(options.headers)
     });
 
     const data = await response.json();
@@ -32,23 +67,23 @@ const API = {
     return data;
   },
 
-  /**
-   * Helper for POST requests.
-   */
-  async post(endpoint, body = {}) {
-    const response = await fetch(this.baseUrl + endpoint, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    });
+  get(endpoint, params = {}) {
+    return this.request(endpoint, { method: 'GET', params });
+  },
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || `Request failed with status ${response.status}`);
-    }
-    return data;
+  post(endpoint, body = {}) {
+    return this.request(endpoint, { method: 'POST', body: JSON.stringify(body) });
+  },
+
+  put(endpoint, body = {}) {
+    return this.request(endpoint, { method: 'PUT', body: JSON.stringify(body) });
+  },
+
+  patch(endpoint, body = {}) {
+    return this.request(endpoint, { method: 'PATCH', body: JSON.stringify(body) });
+  },
+
+  delete(endpoint) {
+    return this.request(endpoint, { method: 'DELETE' });
   }
 };

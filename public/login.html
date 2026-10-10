@@ -7,9 +7,9 @@
   <title>Login — NoticeNexus</title>
 
   <!-- Design System Stylesheets -->
-  <link rel="stylesheet" href="css/variables.css">
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
 
   <style>
     .login-container {
@@ -146,54 +146,85 @@
         </button>
       </form>
 
+      <div style="margin-top: var(--space-lg); padding: var(--space-md); background: #FAF9FD; border: 1px solid #DFDAF7; border-radius: var(--radius-sm); font-size: 0.82rem; color: var(--color-navy);">
+        <strong style="color: var(--color-violet);">Development Demo Accounts:</strong>
+        <div style="margin-top: 4px; display: flex; flex-direction: column; gap: 2px;">
+          <span>👑 Admin: <code>admin</code> / <code>Admin@123</code></span>
+          <span>🏛️ Staff: <code>staff_exam</code> / <code>Staff@123</code></span>
+          <span>🎓 Student: <code>student_demo</code> / <code>Student@123</code></span>
+        </div>
+      </div>
+
       <div style="text-align: center; margin-top: var(--space-lg); font-size: 0.85rem; color: var(--text-muted);">
         <p>🔒 Session secured with bcrypt and parameterized tokens.</p>
-        <p style="margin-top: 4px;"><a href="student.html">Return to Public Notice Board</a></p>
+        <p style="margin-top: 4px;"><a href="/student">Return to Public Notice Board</a></p>
       </div>
     </div>
   </main>
 
+  <script src="/js/api.js"></script>
   <script>
-    // Phase 2 UI interaction; real backend authentication connects in Phase 6
     const staffBtn = document.getElementById("btn-role-staff");
     const studentBtn = document.getElementById("btn-role-student");
     const usernameInput = document.getElementById("username-input");
+    const passwordInput = document.getElementById("password-input");
+    const submitBtn = document.getElementById("login-submit-btn");
     const alertBox = document.getElementById("login-alert-box");
     const loginForm = document.getElementById("login-form");
 
     staffBtn.addEventListener("click", () => {
       staffBtn.classList.add("active");
       studentBtn.classList.remove("active");
-      usernameInput.placeholder = "e.g. staff.admin@college.edu";
+      usernameInput.placeholder = "e.g. admin or staff_exam";
       alertBox.className = "login-alert";
-      alertBox.textContent = "";
+      alertBox.style.display = "none";
     });
 
     studentBtn.addEventListener("click", () => {
       studentBtn.classList.add("active");
       staffBtn.classList.remove("active");
-      usernameInput.placeholder = "e.g. rollnumber@student.college.edu";
+      usernameInput.placeholder = "e.g. student_demo";
       alertBox.className = "login-alert info";
       alertBox.textContent = "Students can view public notices without logging in, or log in to sync saved bookmarks.";
+      alertBox.style.display = "block";
     });
 
-    loginForm.addEventListener("submit", (e) => {
+    loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      // Phase 2 placeholder validation; Phase 6 connects real /api/auth/login
       const username = usernameInput.value.trim();
-      const password = document.getElementById("password-input").value;
+      const password = passwordInput.value;
 
       if (!username || !password) {
         alertBox.className = "login-alert error";
         alertBox.textContent = "Please enter both your username and password.";
+        alertBox.style.display = "block";
         return;
       }
 
-      // If user logs in with staff, redirect to admin.html for Phase 2 UI testing
-      if (staffBtn.classList.contains("active")) {
-        window.location.href = "admin.html";
-      } else {
-        window.location.href = "student.html";
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Signing In...";
+      alertBox.style.display = "none";
+
+      try {
+        const response = await API.post('/auth/login', { username, password });
+        const { token, user } = response.data;
+
+        // Store JWT token and user profile
+        API.setToken(token);
+        API.setCurrentUser(user);
+
+        // Redirect based on verified role
+        if (user.role === 'admin' || user.role === 'staff') {
+          window.location.href = '/admin';
+        } else {
+          window.location.href = '/student';
+        }
+      } catch (err) {
+        alertBox.className = "login-alert error";
+        alertBox.textContent = err.message || "Invalid credentials. Please verify your username and password.";
+        alertBox.style.display = "block";
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Sign In to Portal";
       }
     });
   </script>
