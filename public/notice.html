@@ -6,10 +6,10 @@
   <meta name="description" content="NoticeNexus — Notice Details & Notice-to-Action Assistant">
   <title>Notice Details — NoticeNexus</title>
 
-  <!-- Design System Stylesheets -->
-  <link rel="stylesheet" href="css/variables.css">
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/components.css">
+  <!-- Design System Stylesheets (Absolute paths so /notice/:id loads correctly) -->
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
 
   <style>
     .notice-detail-container {
@@ -180,18 +180,18 @@
   <!-- Top Navigation Bar -->
   <header class="navbar" role="banner">
     <div class="container nav-wrapper">
-      <a href="index.html" class="brand" aria-label="NoticeNexus Home">
+      <a href="/" class="brand" aria-label="NoticeNexus Home">
         <div class="brand-icon">NN</div>
         <div class="brand-text">Notice<span>Nexus</span></div>
       </a>
       <nav aria-label="Navigation">
         <ul class="nav-links">
-          <li><a href="student.html" class="nav-link">Notice Board</a></li>
-          <li><a href="student.html#deadlines-anchor" class="nav-link">Deadlines</a></li>
+          <li><a href="/student" class="nav-link">Notice Board</a></li>
+          <li><a href="/student#deadlines-anchor" class="nav-link">Deadlines</a></li>
         </ul>
       </nav>
       <div class="nav-actions">
-        <a href="student.html" class="btn btn-outline btn-sm">← Back to Notices</a>
+        <a href="/student" class="btn btn-outline btn-sm">← Back to Notices</a>
       </div>
     </div>
   </header>
@@ -200,7 +200,7 @@
   <main class="container main-content notice-detail-container">
     
     <div class="back-btn-row">
-      <a href="student.html" class="btn btn-outline btn-sm">← Back to All Notices</a>
+      <a href="/student" class="btn btn-outline btn-sm">← Back to All Notices</a>
     </div>
 
     <article class="notice-detail-card">
@@ -308,8 +308,8 @@
     </div>
   </footer>
 
-  <!-- Centralized API client & Notice Detail Logic -->
-  <script src="js/api.js"></script>
-  <script src="js/notice-detail.js"></script>
+  <!-- Centralized API client & Notice Detail Logic (Absolute paths for /notice/:id) -->
+  <script src="/js/api.js"></script>
+  <script src="/js/notice-detail.js"></script>
 </body>
 </html>

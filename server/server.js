@@ -16,6 +16,7 @@ const server = app.listen(PORT, () => {
   console.log(`📌 Student Portal:  http://localhost:${PORT}/student`);
   console.log(`📌 Staff Login:     http://localhost:${PORT}/login`);
   console.log(`📌 Admin Console:   http://localhost:${PORT}/admin`);
+  console.log(`📌 Notice Detail:   http://localhost:${PORT}/notice/1`);
   console.log(`🩺 Health Check:    http://localhost:${PORT}/api/health`);
   console.log('================================================================');
 });

@@ -196,7 +196,7 @@ async function fetchDeadlinesFromAPI() {
           </div>
           <div class="deadline-content">
             <div class="deadline-title">
-              <a href="notice.html?id=${n.id}">${escapeHtml(n.title)}</a>
+              <a href="/notice/${n.id}">${escapeHtml(n.title)}</a>
             </div>
             <div class="deadline-meta">
               Due: ${formatDate(n.deadline)} · ${escapeHtml(n.department_name)}
@@ -270,7 +270,7 @@ function renderNotices(noticesToRender = currentNotices) {
 
         <!-- Title -->
         <h3 class="notice-title">
-          <a href="notice.html?id=${notice.id}">${escapeHtml(notice.title)}</a>
+          <a href="/notice/${notice.id}">${escapeHtml(notice.title)}</a>
         </h3>
 
         <!-- Content Snippet -->
@@ -330,7 +330,7 @@ function renderNotices(noticesToRender = currentNotices) {
             </button>
 
             <!-- Full Details Link -->
-            <a href="notice.html?id=${notice.id}" class="btn btn-primary btn-sm">
+            <a href="/notice/${notice.id}" class="btn btn-primary btn-sm">
               View Full Notice →
             </a>
           </div>
