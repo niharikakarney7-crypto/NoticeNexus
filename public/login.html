@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="NoticeNexus — Staff and Student Login Portal">
+  <title>Login — NoticeNexus</title>
+
+  <!-- Design System Stylesheets -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+
+  <style>
+    .login-container {
+      max-width: 440px;
+      margin: var(--space-3xl) auto;
+      padding: 0 var(--space-md);
+    }
+    .login-card {
+      background-color: var(--color-white);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: var(--space-2xl);
+      box-shadow: var(--shadow-md);
+    }
+    .login-header {
+      text-align: center;
+      margin-bottom: var(--space-xl);
+    }
+    .login-header h1 {
+      font-size: 1.6rem;
+      color: var(--color-navy);
+      margin-top: var(--space-xs);
+    }
+    .login-header p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    .role-toggle {
+      display: flex;
+      background-color: var(--color-offwhite);
+      padding: 4px;
+      border-radius: var(--radius-sm);
+      margin-bottom: var(--space-lg);
+      border: 1px solid var(--border-light);
+    }
+    .role-toggle-btn {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      background: none;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-radius: var(--radius-xs);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .role-toggle-btn.active {
+      background-color: var(--color-white);
+      color: var(--color-navy);
+      box-shadow: var(--shadow-xs);
+    }
+    .login-alert {
+      padding: var(--space-sm) var(--space-md);
+      border-radius: var(--radius-sm);
+      margin-bottom: var(--space-md);
+      font-size: 0.88rem;
+      display: none;
+    }
+    .login-alert.error {
+      background-color: #FDF1EE;
+      color: var(--status-deadline);
+      border: 1px solid rgba(217, 56, 30, 0.3);
+      display: block;
+    }
+    .login-alert.info {
+      background-color: #EBF0FF;
+      color: var(--color-blue);
+      border: 1px solid rgba(83, 110, 213, 0.3);
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <header class="navbar" role="banner">
+    <div class="container nav-wrapper">
+      <a href="index.html" class="brand" aria-label="NoticeNexus Home">
+        <div class="brand-icon">NN</div>
+        <div class="brand-text">Notice<span>Nexus</span></div>
+      </a>
+      <div class="nav-actions">
+        <a href="student.html" class="btn btn-outline btn-sm">Public Notice Board</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Login Main -->
+  <main class="login-container">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="brand-icon" style="margin: 0 auto; width: 44px; height: 44px; font-size: 1.3rem;">NN</div>
+        <h1>Portal Login</h1>
+        <p>Intelligent Campus Information Network</p>
+      </div>
+
+      <!-- Role Selector -->
+      <div class="role-toggle" role="tablist">
+        <button type="button" class="role-toggle-btn active" id="btn-role-staff" role="tab" aria-selected="true">Staff / Faculty</button>
+        <button type="button" class="role-toggle-btn" id="btn-role-student" role="tab" aria-selected="false">Student</button>
+      </div>
+
+      <!-- Alert Box -->
+      <div id="login-alert-box" class="login-alert" role="alert"></div>
+
+      <!-- Login Form -->
+      <form id="login-form">
+        <div class="form-group">
+          <label for="username-input" class="form-label">Email or Campus Username</label>
+          <input 
+            type="text" 
+            id="username-input" 
+            class="form-input" 
+            placeholder="e.g. staff.admin@college.edu" 
+            required 
+            autocomplete="username"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="password-input" class="form-label">Password</label>
+          <input 
+            type="password" 
+            id="password-input" 
+            class="form-input" 
+            placeholder="••••••••••••" 
+            required 
+            autocomplete="current-password"
+          >
+        </div>
+
+        <button type="submit" id="login-submit-btn" class="btn btn-primary" style="width: 100%; margin-top: var(--space-sm);">
+          Sign In to Portal
+        </button>
+      </form>
+
+      <div style="text-align: center; margin-top: var(--space-lg); font-size: 0.85rem; color: var(--text-muted);">
+        <p>🔒 Session secured with bcrypt and parameterized tokens.</p>
+        <p style="margin-top: 4px;"><a href="student.html">Return to Public Notice Board</a></p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Phase 2 UI interaction; real backend authentication connects in Phase 6
+    const staffBtn = document.getElementById("btn-role-staff");
+    const studentBtn = document.getElementById("btn-role-student");
+    const usernameInput = document.getElementById("username-input");
+    const alertBox = document.getElementById("login-alert-box");
+    const loginForm = document.getElementById("login-form");
+
+    staffBtn.addEventListener("click", () => {
+      staffBtn.classList.add("active");
+      studentBtn.classList.remove("active");
+      usernameInput.placeholder = "e.g. staff.admin@college.edu";
+      alertBox.className = "login-alert";
+      alertBox.textContent = "";
+    });
+
+    studentBtn.addEventListener("click", () => {
+      studentBtn.classList.add("active");
+      staffBtn.classList.remove("active");
+      usernameInput.placeholder = "e.g. rollnumber@student.college.edu";
+      alertBox.className = "login-alert info";
+      alertBox.textContent = "Students can view public notices without logging in, or log in to sync saved bookmarks.";
+    });
+
+    loginForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      // Phase 2 placeholder validation; Phase 6 connects real /api/auth/login
+      const username = usernameInput.value.trim();
+      const password = document.getElementById("password-input").value;
+
+      if (!username || !password) {
+        alertBox.className = "login-alert error";
+        alertBox.textContent = "Please enter both your username and password.";
+        return;
+      }
+
+      // If user logs in with staff, redirect to admin.html for Phase 2 UI testing
+      if (staffBtn.classList.contains("active")) {
+        window.location.href = "admin.html";
+      } else {
+        window.location.href = "student.html";
+      }
+    });
+  </script>
+</body>
+</html>

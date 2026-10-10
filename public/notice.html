@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="NoticeNexus — Notice Details & Notice-to-Action Assistant">
+  <title>Notice Details — NoticeNexus</title>
+
+  <!-- Design System Stylesheets -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+
+  <style>
+    .notice-detail-container {
+      max-width: 920px;
+      margin: var(--space-xl) auto var(--space-3xl);
+    }
+    .back-btn-row {
+      margin-bottom: var(--space-md);
+    }
+    .notice-detail-card {
+      background-color: var(--color-white);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: var(--space-2xl);
+      box-shadow: var(--shadow-sm);
+    }
+    .notice-meta-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-md);
+      padding-bottom: var(--space-md);
+      border-bottom: 1px solid var(--border-light);
+    }
+    .notice-badges-group {
+      display: flex;
+      gap: var(--space-xs);
+      align-items: center;
+    }
+    .notice-detail-title {
+      font-size: 2rem;
+      color: var(--color-navy);
+      margin-bottom: var(--space-md);
+      line-height: 1.25;
+    }
+    .notice-detail-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-lg);
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: var(--space-xl);
+    }
+    .notice-body {
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--color-navy);
+      margin-bottom: var(--space-xl);
+      white-space: pre-line;
+    }
+    
+    /* Verified Source Box */
+    .source-box {
+      background-color: #F8F9FD;
+      border: 1px solid #D8E0FA;
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      margin-bottom: var(--space-xl);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+    }
+    .source-info {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    .source-icon {
+      font-size: 1.5rem;
+    }
+    .source-text {
+      font-size: 0.9rem;
+      color: var(--color-navy);
+    }
+    .source-text strong {
+      display: block;
+    }
+    
+    /* Notice to Action Assistant Box */
+    .action-assistant-large {
+      background-color: var(--color-offwhite);
+      border: 1px solid var(--border-subtle);
+      border-left: 6px solid var(--color-plum);
+      border-radius: var(--radius-md);
+      padding: var(--space-xl);
+      margin-bottom: var(--space-xl);
+    }
+    .action-assistant-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-md);
+    }
+    .action-assistant-header h3 {
+      color: var(--color-plum);
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+    .action-grid-large {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-lg);
+    }
+    .action-card-item {
+      background-color: var(--color-white);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      padding: var(--space-md);
+    }
+    .action-card-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .action-card-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--color-navy);
+    }
+
+    /* Telugu Language Section */
+    .telugu-section {
+      background-color: #FAF4F8;
+      border: 1px solid #EED4E4;
+      border-radius: var(--radius-md);
+      padding: var(--space-xl);
+      margin-bottom: var(--space-xl);
+    }
+    .telugu-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-sm);
+    }
+    .telugu-header h3 {
+      color: var(--color-plum);
+      font-size: 1.1rem;
+    }
+    .telugu-text {
+      font-family: var(--font-family-telugu), sans-serif;
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: var(--color-navy);
+    }
+
+    @media (max-width: 768px) {
+      .notice-detail-card {
+        padding: var(--space-lg);
+      }
+      .action-grid-large {
+        grid-template-columns: 1fr;
+      }
+      .notice-detail-title {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <header class="navbar" role="banner">
+    <div class="container nav-wrapper">
+      <a href="index.html" class="brand" aria-label="NoticeNexus Home">
+        <div class="brand-icon">NN</div>
+        <div class="brand-text">Notice<span>Nexus</span></div>
+      </a>
+      <nav aria-label="Navigation">
+        <ul class="nav-links">
+          <li><a href="student.html" class="nav-link">Notice Board</a></li>
+          <li><a href="student.html#deadlines-anchor" class="nav-link">Deadlines</a></li>
+        </ul>
+      </nav>
+      <div class="nav-actions">
+        <a href="student.html" class="btn btn-outline btn-sm">← Back to Notices</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Notice Details Main Content -->
+  <main class="container main-content notice-detail-container">
+    
+    <div class="back-btn-row">
+      <a href="student.html" class="btn btn-outline btn-sm">← Back to All Notices</a>
+    </div>
+
+    <article class="notice-detail-card">
+      
+      <!-- Top Badges & Audio Controls -->
+      <div class="notice-meta-bar">
+        <div class="notice-badges-group">
+          <span class="badge badge-verified">✓ Official Verified Source</span>
+          <span class="badge badge-exam" id="detail-category">Category</span>
+          <span class="badge" id="detail-year" style="background:#F1F2F4; color:var(--color-navy);">All Years</span>
+        </div>
+        
+        <!-- Text-to-Speech Controls -->
+        <div class="tts-bar">
+          <button type="button" id="detail-tts-play" aria-label="Listen to notice in English">
+            🔊 Listen (English)
+          </button>
+          <button type="button" id="detail-tts-stop" style="display:none;" aria-label="Stop audio">
+            ⏹ Stop
+          </button>
+        </div>
+      </div>
+
+      <!-- Title -->
+      <h1 class="notice-detail-title" id="detail-title">Loading Notice Title...</h1>
+
+      <!-- Metadata info -->
+      <div class="notice-detail-meta">
+        <div>🏛️ Department: <strong id="detail-department">...</strong></div>
+        <div>📅 Published: <strong id="detail-published-date">...</strong></div>
+        <div>🕒 Last Updated: <strong id="detail-updated-date">...</strong></div>
+      </div>
+
+      <!-- Notice-to-Action Assistant Breakdown -->
+      <div class="action-assistant-large">
+        <div class="action-assistant-header">
+          <h3>🎯 Notice-to-Action Breakdown</h3>
+          <span style="font-size: 0.8rem; font-weight:600; color:var(--text-muted);">Verified from Official Circular</span>
+        </div>
+        <div class="action-grid-large">
+          <div class="action-card-item">
+            <div class="action-card-label">Who it applies to (Audience)</div>
+            <div class="action-card-value" id="action-audience">Not specified in this notice</div>
+          </div>
+          <div class="action-card-item">
+            <div class="action-card-label">Submission Deadline</div>
+            <div class="action-card-value" id="action-deadline" style="color: var(--status-deadline);">Not specified in this notice</div>
+          </div>
+          <div class="action-card-item">
+            <div class="action-card-label">Required Documents</div>
+            <div class="action-card-value" id="action-documents">Not specified in this notice</div>
+          </div>
+          <div class="action-card-item">
+            <div class="action-card-label">Next Action Required</div>
+            <div class="action-card-value" id="action-steps">Not specified in this notice</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Full Notice Content -->
+      <h2 style="font-size: 1.25rem; color: var(--color-navy); margin-bottom: var(--space-sm);">Official Announcement Text</h2>
+      <div class="notice-body" id="detail-body">
+        Loading notice content...
+      </div>
+
+      <!-- Verified Official Source Box -->
+      <div class="source-box">
+        <div class="source-info">
+          <span class="source-icon">📎</span>
+          <div class="source-text">
+            <strong>Original Official Circular</strong>
+            <span id="detail-source-title">Official Document</span>
+          </div>
+        </div>
+        <a href="#" id="detail-source-link" target="_blank" rel="noopener noreferrer" class="btn btn-outline-plum btn-sm">
+          Open Official Source ↗
+        </a>
+      </div>
+
+      <!-- Telugu Accessibility Section -->
+      <div class="telugu-section" id="telugu-container">
+        <div class="telugu-header">
+          <h3>తెలుగు వివరణ (Telugu Accessibility Summary)</h3>
+          <button type="button" id="telugu-tts-play" class="btn btn-outline-plum btn-sm">
+            🔊 Listen in Telugu
+          </button>
+        </div>
+        <h4 id="detail-telugu-title" style="margin-bottom: var(--space-xs); color: var(--color-navy);">తెలుగు శీర్షిక</h4>
+        <p class="telugu-text" id="detail-telugu-summary">
+          ఈ నోటీసు కోసం తెలుగు వివరణ అందుబాటులో ఉంది.
+        </p>
+      </div>
+
+    </article>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>&copy; 2026 NoticeNexus — Intelligent Campus Information Network.</p>
+        <p>Single Unified Portal Architecture</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Script for Notice Detail view -->
+  <script src="js/notice-detail.js"></script>
+</body>
+</html>

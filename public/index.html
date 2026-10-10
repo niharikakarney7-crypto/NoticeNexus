@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="NoticeNexus — Intelligent Campus Information Network. Centralized, verified, and accessible official college announcements.">
+  <title>NoticeNexus — Every Notice. One Trusted Place.</title>
+  
+  <!-- Design System Stylesheets -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+
+  <style>
+    /* Landing page specific section styles */
+    .hero-section {
+      background-color: var(--color-white);
+      border-bottom: 1px solid var(--border-light);
+      padding: var(--space-3xl) 0 var(--space-2xl);
+    }
+    .hero-content {
+      max-width: 820px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .hero-tagline {
+      display: inline-block;
+      color: var(--color-plum);
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background-color: #FAF0F6;
+      border: 1px solid rgba(160, 47, 118, 0.2);
+      padding: 6px 16px;
+      border-radius: var(--radius-pill);
+      margin-bottom: var(--space-md);
+    }
+    .hero-title {
+      font-size: 3rem;
+      line-height: 1.15;
+      margin-bottom: var(--space-md);
+      color: var(--color-navy);
+    }
+    .hero-title span {
+      color: var(--color-plum);
+    }
+    .hero-desc {
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      margin-bottom: var(--space-xl);
+      line-height: 1.6;
+    }
+    .hero-cta {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-md);
+      flex-wrap: wrap;
+    }
+    
+    /* Feature Section */
+    .features-section {
+      padding: var(--space-3xl) 0;
+      background-color: var(--color-offwhite);
+    }
+    .section-header {
+      text-align: center;
+      max-width: 680px;
+      margin: 0 auto var(--space-2xl);
+    }
+    .section-header h2 {
+      margin-bottom: var(--space-xs);
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: var(--space-lg);
+    }
+    .feature-card {
+      background-color: var(--color-white);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: var(--space-xl);
+      box-shadow: var(--shadow-xs);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .feature-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    .feature-icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: var(--space-md);
+    }
+    .icon-plum {
+      background-color: #FAF0F6;
+      color: var(--color-plum);
+    }
+    .icon-violet {
+      background-color: #EFEBFD;
+      color: var(--color-violet);
+    }
+    .icon-blue {
+      background-color: #EEF2FD;
+      color: var(--color-blue);
+    }
+    
+    /* Problem vs Solution */
+    .contrast-section {
+      padding: var(--space-3xl) 0;
+      background-color: var(--color-white);
+      border-top: 1px solid var(--border-light);
+    }
+    .contrast-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-xl);
+      align-items: stretch;
+    }
+    .contrast-box {
+      padding: var(--space-xl);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-light);
+    }
+    .problem-box {
+      background-color: #FDF7F7;
+      border-color: #F8D7DA;
+    }
+    .solution-box {
+      background-color: #F4FBF7;
+      border-color: #C3E6CB;
+    }
+    .contrast-box h3 {
+      margin-bottom: var(--space-sm);
+    }
+    .problem-box h3 {
+      color: #901A1E;
+    }
+    .solution-box h3 {
+      color: #0D824B;
+    }
+    .contrast-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+      margin-top: var(--space-md);
+    }
+    .contrast-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-xs);
+      font-size: 0.95rem;
+    }
+    
+    @media (max-width: 768px) {
+      .hero-title {
+        font-size: 2.2rem;
+      }
+      .contrast-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- Navigation Bar -->
+  <header class="navbar" role="banner">
+    <div class="container nav-wrapper">
+      <a href="index.html" class="brand" aria-label="NoticeNexus Home">
+        <div class="brand-icon">NN</div>
+        <div class="brand-text">Notice<span>Nexus</span></div>
+      </a>
+      <nav aria-label="Main Navigation">
+        <ul class="nav-links">
+          <li><a href="index.html" class="nav-link active">Home</a></li>
+          <li><a href="#features" class="nav-link">Features</a></li>
+          <li><a href="#accessibility" class="nav-link">Accessibility</a></li>
+          <li><a href="student.html" class="nav-link">Notice Board</a></li>
+        </ul>
+      </nav>
+      <div class="nav-actions">
+        <a href="login.html" class="btn btn-outline btn-sm">Staff Login</a>
+        <a href="student.html" class="btn btn-primary btn-sm">Student Portal</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main id="main-content" class="main-content">
+    
+    <!-- Hero Section -->
+    <section class="hero-section" aria-labelledby="hero-heading">
+      <div class="container hero-content">
+        <div class="hero-tagline">Campus Information Network</div>
+        <h1 id="hero-heading" class="hero-title">Every Notice. <br><span>One Trusted Place.</span></h1>
+        <p class="hero-desc">
+          Stop digging through fragmented WhatsApp chats, scattered PDFs, and crowded bulletin boards. NoticeNexus delivers centralized, official, and accessible college announcements with verified deadlines and clear action points.
+        </p>
+        <div class="hero-cta">
+          <a href="student.html" class="btn btn-primary">Browse Campus Notices</a>
+          <a href="login.html" class="btn btn-secondary">Authorized Staff Access</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contrast: Problem vs Solution -->
+    <section class="contrast-section" aria-labelledby="problem-heading">
+      <div class="container">
+        <div class="contrast-grid">
+          <div class="contrast-box problem-box">
+            <h3 id="problem-heading">The Current Campus Struggle</h3>
+            <p>Students face high friction and miss vital opportunities:</p>
+            <ul class="contrast-list">
+              <li>⚠️ <strong>Scattered channels:</strong> Key deadlines buried in noisy chat forwards.</li>
+              <li>⚠️ <strong>Unverified rumors:</strong> Ambiguous requirements causing panic.</li>
+              <li>⚠️ <strong>Language barriers:</strong> Complex academic jargon with no regional or audio support.</li>
+              <li>⚠️ <strong>Missed deadlines:</strong> Scholarship and exam forms closing without notice.</li>
+            </ul>
+          </div>
+          <div class="contrast-box solution-box">
+            <h3>The NoticeNexus Standard</h3>
+            <p>Engineered for clarity, accountability, and student success:</p>
+            <ul class="contrast-list">
+              <li>✅ <strong>100% Source-Grounded:</strong> Direct links to official college sources.</li>
+              <li>✅ <strong>Notice-to-Action Assistant:</strong> Clear summary of who, when, and what documents are required.</li>
+              <li>✅ <strong>Universal Accessibility:</strong> One-click Text-to-Speech and Telugu language explanations.</li>
+              <li>✅ <strong>Deadline Tracking:</strong> Interactive calendar and personal reminders.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Core Features Section -->
+    <section id="features" class="features-section" aria-labelledby="features-heading">
+      <div class="container">
+        <div class="section-header">
+          <h2 id="features-heading">Engineered for Students and Faculty</h2>
+          <p>Everything you need to track official college notices without the chaos.</p>
+        </div>
+        
+        <div class="features-grid">
+          <!-- Feature 1 -->
+          <article class="feature-card">
+            <div class="feature-icon-box icon-plum">📋</div>
+            <h3>Centralized Notice Centre</h3>
+            <p>Search, filter, and sort announcements across Examinations, Scholarships, Academics, Placements, and Administration.</p>
+          </article>
+
+          <!-- Feature 2 -->
+          <article class="feature-card">
+            <div class="feature-icon-box icon-violet">🎯</div>
+            <h3>Notice-to-Action Assistant</h3>
+            <p>Instantly extracts the audience, deadline, required documents, and next steps so you never misread official circulars.</p>
+          </article>
+
+          <!-- Feature 3 -->
+          <article class="feature-card">
+            <div class="feature-icon-box icon-blue">⏰</div>
+            <h3>Deadlines & Reminders</h3>
+            <p>Never miss a submission. View upcoming deadlines in chronological order and set custom reminders for yourself.</p>
+          </article>
+
+          <!-- Feature 4 -->
+          <article class="feature-card" id="accessibility">
+            <div class="feature-icon-box icon-plum">🔊</div>
+            <h3>Telugu & Speech Accessibility</h3>
+            <p>Listen to notice contents using built-in browser Text-to-Speech (TTS) and toggle to authentic Telugu translations.</p>
+          </article>
+
+          <!-- Feature 5 -->
+          <article class="feature-card">
+            <div class="feature-icon-box icon-violet">🛡️</div>
+            <h3>Strict Source Verification</h3>
+            <p>Every notice is published by authorized department staff and links directly to original official circulars or PDF sources.</p>
+          </article>
+
+          <!-- Feature 6 -->
+          <article class="feature-card">
+            <div class="feature-icon-box icon-blue">📱</div>
+            <h3>Responsive Single Portal</h3>
+            <p>All student and staff features live in one unified web portal accessible from your laptop, tablet, or phone.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <h4>NoticeNexus</h4>
+          <p>Intelligent Campus Information Network. Built to ensure every student has equal, reliable, and accessible access to official campus notices.</p>
+        </div>
+        <div class="footer-col">
+          <h5>Portals</h5>
+          <ul>
+            <li><a href="student.html">Student Dashboard</a></li>
+            <li><a href="login.html">Staff & Admin Login</a></li>
+            <li><a href="student.html?cat=Examinations">Examination Notices</a></li>
+            <li><a href="student.html?cat=Scholarships">Scholarships</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5>Accessibility</h5>
+          <ul>
+            <li><a href="#accessibility">Text-to-Speech Guide</a></li>
+            <li><a href="#accessibility">Telugu Translation Support</a></li>
+            <li><a href="#accessibility">Keyboard Navigation</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5>System</h5>
+          <ul>
+            <li><a href="#">About NoticeNexus</a></li>
+            <li><a href="#">Privacy & Source Policy</a></li>
+            <li><a href="#">Status: System Operational</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 NoticeNexus — Intelligent Campus Information Network. All rights reserved.</p>
+        <p>Single Unified Portal Architecture</p>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

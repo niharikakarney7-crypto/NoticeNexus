@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="NoticeNexus — Staff & Admin Portal for Notice Management">
+  <title>Staff Notice Management — NoticeNexus</title>
+
+  <!-- Design System Stylesheets -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+
+  <style>
+    .admin-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: var(--space-xl) 0 var(--space-lg);
+      flex-wrap: wrap;
+      gap: var(--space-md);
+    }
+    .admin-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-md);
+      margin-bottom: var(--space-xl);
+    }
+    .stat-card {
+      background-color: var(--color-white);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      box-shadow: var(--shadow-xs);
+    }
+    .stat-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .stat-number {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--color-navy);
+      margin-top: 2px;
+    }
+
+    /* Create/Edit Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(24, 33, 58, 0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: var(--space-md);
+      overflow-y: auto;
+    }
+    .modal-box {
+      background-color: var(--color-white);
+      border-radius: var(--radius-lg);
+      max-width: 760px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: var(--space-xl);
+      box-shadow: var(--shadow-lg);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-lg);
+      padding-bottom: var(--space-sm);
+      border-bottom: 1px solid var(--border-light);
+    }
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-md);
+    }
+    @media (max-width: 600px) {
+      .form-grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <header class="navbar" role="banner">
+    <div class="container nav-wrapper">
+      <a href="index.html" class="brand" aria-label="NoticeNexus Home">
+        <div class="brand-icon">NN</div>
+        <div class="brand-text">Notice<span>Nexus</span> <small style="font-size:0.75rem; color:var(--color-plum);">STAFF CONSOLE</small></div>
+      </a>
+      <div class="nav-actions">
+        <a href="student.html" target="_blank" class="btn btn-outline btn-sm">Preview Student Board ↗</a>
+        <a href="login.html" class="btn btn-outline-plum btn-sm">Log Out</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container main-content">
+    
+    <div class="admin-header-row">
+      <div>
+        <h1 style="font-size: 1.75rem;">Official Notice Management</h1>
+        <p>Publish, edit, and verify campus circulars with source grounding.</p>
+      </div>
+      <div>
+        <button id="open-create-modal-btn" class="btn btn-primary">
+          + Create New Notice
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="admin-stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Published Notices</div>
+        <div class="stat-number" style="color: var(--status-verified);" id="stat-published">4</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Draft Circulars</div>
+        <div class="stat-number" style="color: var(--status-draft);" id="stat-drafts">1</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Archived Notices</div>
+        <div class="stat-number" style="color: var(--text-muted);" id="stat-archived">2</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active Deadlines</div>
+        <div class="stat-number" style="color: var(--color-plum);" id="stat-deadlines">3</div>
+      </div>
+    </div>
+
+    <!-- Notice Management Table -->
+    <div class="card" style="padding: 0; overflow: hidden; margin-bottom: var(--space-3xl);">
+      <div class="card-header" style="padding: var(--space-md); margin-bottom: 0;">
+        <h3 style="font-size: 1.1rem;">Manage Department Announcements</h3>
+        <div>
+          <select id="admin-filter-status" class="form-select" style="width: auto; display: inline-block;">
+            <option value="ALL">All Statuses</option>
+            <option value="published">Published</option>
+            <option value="draft">Drafts</option>
+            <option value="archived">Archived</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="data-table-wrapper" style="border: none; box-shadow: none;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Title & Department</th>
+              <th>Category</th>
+              <th>Year</th>
+              <th>Status</th>
+              <th>Deadline</th>
+              <th>Published</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admin-table-body">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Create / Edit Notice Modal -->
+  <div class="modal-overlay" id="notice-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 id="modal-title" style="font-size: 1.3rem;">Publish New Official Notice</h2>
+        <button type="button" id="close-modal-btn" style="background:none; border:none; font-size:1.4rem; cursor:pointer;" aria-label="Close modal">✕</button>
+      </div>
+
+      <form id="notice-form">
+        <!-- Title -->
+        <div class="form-group">
+          <label for="form-title" class="form-label">Notice Title *</label>
+          <input type="text" id="form-title" class="form-input" placeholder="e.g. End Semester Exam Time Table Notification" required>
+        </div>
+
+        <!-- Category & Department -->
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="form-category" class="form-label">Category *</label>
+            <select id="form-category" class="form-select" required>
+              <option value="Examinations">Examinations</option>
+              <option value="Scholarships">Scholarships</option>
+              <option value="Academics">Academics</option>
+              <option value="Assignments">Assignments</option>
+              <option value="Placements">Placements</option>
+              <option value="Events">Events</option>
+              <option value="Administration">Administration</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="form-department" class="form-label">Publishing Department *</label>
+            <select id="form-department" class="form-select" required>
+              <option value="Examination Cell">Examination Cell</option>
+              <option value="Computer Science & Engineering">Computer Science & Engg</option>
+              <option value="Scholarship Division">Scholarship Division</option>
+              <option value="Training & Placement">Training & Placement</option>
+              <option value="Dean of Student Affairs">Dean of Student Affairs</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Academic Year & Deadline -->
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="form-year" class="form-label">Applicable Academic Year</label>
+            <select id="form-year" class="form-select">
+              <option value="All Years">All Years</option>
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="form-deadline" class="form-label">Official Deadline (If applicable)</label>
+            <input type="date" id="form-deadline" class="form-input">
+          </div>
+        </div>
+
+        <!-- Full Announcement Content -->
+        <div class="form-group">
+          <label for="form-content" class="form-label">Official Announcement Text *</label>
+          <textarea id="form-content" class="form-textarea" rows="4" placeholder="Enter complete circular text..." required></textarea>
+        </div>
+
+        <!-- Verified Official Source URL & Title -->
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="form-source-url" class="form-label">Original Source URL / Document Link *</label>
+            <input type="url" id="form-source-url" class="form-input" placeholder="https://college.edu/notices/circular-842.pdf" required>
+          </div>
+
+          <div class="form-group">
+            <label for="form-source-title" class="form-label">Official Reference / Circular Number</label>
+            <input type="text" id="form-source-title" class="form-input" placeholder="e.g. Ref No: EC/2026/842">
+          </div>
+        </div>
+
+        <!-- Notice-to-Action Grounding Fields -->
+        <fieldset style="border: 1px solid var(--border-light); padding: var(--space-md); border-radius: var(--radius-sm); margin-bottom: var(--space-md);">
+          <legend style="font-size: 0.88rem; font-weight:700; color:var(--color-plum); padding: 0 6px;">
+            Notice-to-Action Assistant Data (Grounded in Source)
+          </legend>
+
+          <div class="form-group">
+            <label for="form-audience" class="form-label">Target Audience</label>
+            <input type="text" id="form-audience" class="form-input" placeholder="e.g. All B.Tech 3rd and 4th year students">
+          </div>
+
+          <div class="form-group">
+            <label for="form-documents" class="form-label">Required Documents (comma-separated)</label>
+            <input type="text" id="form-documents" class="form-input" placeholder="e.g. Fee receipt, ID Card, Bonafide">
+          </div>
+
+          <div class="form-group">
+            <label for="form-actions" class="form-label">Immediate Action Required</label>
+            <input type="text" id="form-actions" class="form-input" placeholder="e.g. Pay fee on ERP portal before deadline">
+          </div>
+        </fieldset>
+
+        <!-- Telugu Accessibility Fields -->
+        <fieldset style="border: 1px solid #EED4E4; background:#FAF4F8; padding: var(--space-md); border-radius: var(--radius-sm); margin-bottom: var(--space-lg);">
+          <legend style="font-size: 0.88rem; font-weight:700; color:var(--color-plum); padding: 0 6px;">
+            తెలుగు వివరణ (Telugu Accessibility)
+          </legend>
+
+          <div class="form-group">
+            <label for="form-telugu-title" class="form-label">తెలుగు శీర్షిక (Telugu Title)</label>
+            <input type="text" id="form-telugu-title" class="form-input" placeholder="నోటీసు శీర్షిక తెలుగులో...">
+          </div>
+
+          <div class="form-group">
+            <label for="form-telugu-summary" class="form-label">తెలుగు సారాంశం (Telugu Summary)</label>
+            <textarea id="form-telugu-summary" class="form-textarea" rows="2" placeholder="ముఖ్యమైన అంశాల సంక్షిప్త వివరణ..."></textarea>
+          </div>
+        </fieldset>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; justify-content: flex-end; gap: var(--space-sm);">
+          <button type="button" id="cancel-modal-btn" class="btn btn-outline">Cancel</button>
+          <button type="submit" name="status" value="draft" class="btn btn-secondary">Save as Draft</button>
+          <button type="submit" name="status" value="published" class="btn btn-primary">Publish Officially</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>&copy; 2026 NoticeNexus — Authorized Staff Console.</p>
+        <p>Single Unified Portal Architecture</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Sample admin notice state for Phase 2 UI testing
+    const adminNotices = [
+      { id: 1, title: "Odd Semester End-Examinations Schedule", dept: "Examination Cell", cat: "Examinations", year: "All Years", status: "published", deadline: "2026-10-25", pubDate: "2026-10-08" },
+      { id: 2, title: "Post-Matric National Scholarship Application Window", dept: "Scholarship Division", cat: "Scholarships", year: "All Years", status: "published", deadline: "2026-11-15", pubDate: "2026-10-05" },
+      { id: 3, title: "Major Project Synopsis Submission Deadline", dept: "Computer Science & Engg", cat: "Academics", year: "4th Year", status: "published", deadline: "2026-10-18", pubDate: "2026-10-09" },
+      { id: 4, title: "TechCorp Campus Placement Selection Process", dept: "Training & Placement", cat: "Placements", year: "4th Year", status: "published", deadline: "2026-10-15", pubDate: "2026-10-07" },
+      { id: 5, title: "Draft: Revised Lab Evaluation Guidelines", dept: "Computer Science & Engg", cat: "Academics", year: "All Years", status: "draft", deadline: "", pubDate: "2026-10-10" }
+    ];
+
+    const tableBody = document.getElementById("admin-table-body");
+    const modal = document.getElementById("notice-modal");
+    const openModalBtn = document.getElementById("open-create-modal-btn");
+    const closeModalBtn = document.getElementById("close-modal-btn");
+    const cancelModalBtn = document.getElementById("cancel-modal-btn");
+    const noticeForm = document.getElementById("notice-form");
+
+    function renderTable() {
+      tableBody.innerHTML = adminNotices.map(n => `
+        <tr>
+          <td>
+            <strong><a href="notice.html?id=${n.id}" target="_blank" style="color:var(--color-navy);">${n.title}</a></strong>
+            <div style="font-size:0.8rem; color:var(--text-muted);">${n.dept}</div>
+          </td>
+          <td><span class="badge badge-exam">${n.cat}</span></td>
+          <td>${n.year}</td>
+          <td>
+            <span class="badge ${n.status === 'published' ? 'badge-verified' : 'badge-admin'}">
+              ${n.status.toUpperCase()}
+            </span>
+          </td>
+          <td style="color:${n.deadline ? 'var(--status-deadline)' : 'inherit'}; font-weight:600;">
+            ${n.deadline || 'None'}
+          </td>
+          <td>${n.pubDate}</td>
+          <td style="text-align: right;">
+            <button class="btn btn-outline btn-sm" onclick="alert('Editing Notice #' + ${n.id})">Edit</button>
+            <button class="btn btn-outline-plum btn-sm" onclick="alert('Notice #' + ${n.id} + ' archived')">Archive</button>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    openModalBtn.addEventListener("click", () => modal.style.display = "flex");
+    closeModalBtn.addEventListener("click", () => modal.style.display = "none");
+    cancelModalBtn.addEventListener("click", () => modal.style.display = "none");
+
+    noticeForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const title = document.getElementById("form-title").value;
+      const dept = document.getElementById("form-department").value;
+      const cat = document.getElementById("form-category").value;
+      const year = document.getElementById("form-year").value;
+      const deadline = document.getElementById("form-deadline").value;
+
+      adminNotices.unshift({
+        id: Date.now(),
+        title,
+        dept,
+        cat,
+        year,
+        status: "published",
+        deadline,
+        pubDate: new Date().toISOString().split("T")[0]
+      });
+
+      renderTable();
+      modal.style.display = "none";
+      noticeForm.reset();
+      alert("Official notice added to management table! (Connected to MySQL in Phase 5 & 6)");
+    });
+
+    renderTable();
+  </script>
+</body>
+</html>
