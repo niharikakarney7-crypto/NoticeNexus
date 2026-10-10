@@ -17,7 +17,8 @@ async function initDatabase() {
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
     multipleStatements: true,
-    charset: 'utf8mb4'
+    charset: 'utf8mb4',
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined
   });
 
   try {

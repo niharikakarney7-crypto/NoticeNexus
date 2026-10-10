@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server/server.js",
     "dev": "nodemon server/server.js",
-    "test": "node tests/suite.js"
+    "test": "node tests/suite.js",
+    "db:init": "node server/config/initDb.js"
   },
   "keywords": [],
   "author": "",
