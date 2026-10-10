@@ -6,6 +6,7 @@
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
+const { testConnection } = require('./config/db');
 
 const app = express();
 
@@ -45,10 +46,12 @@ app.get(['/notice', '/notice/:id'], (req, res) => {
 // ============================================================================
 // REST API Health-Check & Diagnostic Endpoint
 // ============================================================================
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
+  const dbStatus = await testConnection();
   res.status(200).json({
     status: 'success',
     message: 'NoticeNexus API and Unified Server are operational',
+    database: dbStatus,
     timestamp: new Date().toISOString(),
     uptime: `${Math.floor(process.uptime())} seconds`,
     environment: process.env.NODE_ENV || 'development'
