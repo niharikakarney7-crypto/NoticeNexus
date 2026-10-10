@@ -7,6 +7,7 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const { testConnection } = require('./config/db');
+const noticeRoutes = require('./routes/notice.routes');
 
 const app = express();
 
@@ -57,6 +58,9 @@ app.get('/api/health', async (req, res) => {
     environment: process.env.NODE_ENV || 'development'
   });
 });
+
+// REST API Feature Routes
+app.use('/api/notices', noticeRoutes);
 
 // Centralized 404 Handler for Unrecognized API Routes
 app.use('/api', (req, res) => {

@@ -119,7 +119,11 @@ INSERT INTO `notices` (
     '2026-10-07 14:00:00',
     1
   )
-ON DUPLICATE KEY UPDATE `title` = VALUES(`title`);
+ON DUPLICATE KEY UPDATE 
+  `title` = VALUES(`title`),
+  `telugu_title` = VALUES(`telugu_title`),
+  `telugu_summary` = VALUES(`telugu_summary`),
+  `content` = VALUES(`content`);
 
 -- 4. Insert Initial Student Reminders (Sample Student #4)
 INSERT INTO `reminders` (`id`, `user_id`, `notice_id`, `title`, `due_date`, `is_completed`) VALUES
